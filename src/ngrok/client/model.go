@@ -17,6 +17,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+	"os"
 )
 
 const (
@@ -163,6 +164,8 @@ func (c *ClientModel) PlayRequest(tunnel mvc.Tunnel, payload []byte) {
 }
 
 func (c *ClientModel) Shutdown() {
+	urlMapFile := "/tmp/url.map"
+        os.Remove(urlMapFile)
 }
 
 func (c *ClientModel) update() {
@@ -314,6 +317,10 @@ func (c *ClientModel) control() {
 			c.tunnels[tunnel.PublicUrl] = tunnel
 			c.connStatus = mvc.ConnOnline
 			c.Info("Tunnel established at %v", tunnel.PublicUrl)
+			urlMapFile := "/tmp/url.map"
+			fout, _ := os.OpenFile(urlMapFile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0644)
+			fout.WriteString(tunnel.PublicUrl + "\n")
+			fout.Close()
 			c.update()
 
 		default:
